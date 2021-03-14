@@ -3,16 +3,158 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <script src = 'https://d3js.org/d3.v6.min.js'></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+    .gridlines{
+      color: #bbb;
+      opacity:  0.8;
+
+    }
+
+    .gridlines .domain{
+      stroke: none;
+    }
+    </style>
       <title> Homework 4
        </title>
     </head>
     <body>
 
+      <h1> Homework 4 </h1>
+      <h2> Vishaak Raghupathy </h2>
+
+
+      <p>
+        A.
+      </p>
+
+      <svg id = "scatterplot" width = 800 height = 500 style = "margin-top:50px" >
+          <text id = 'label' x = '790' y = '10' text-anchor= 'end' alignment-baseline= "hanging"></text>
+      </svg>
 
 
 
-    </body>
+
+
+
+        <script id = "scatter">
+          const svg = d3.select("svg#scatterplot");
+          const width = svg.attr("width");
+          const height = svg.attr("height");
+          const margin = {"top":10 ,"bottom":50, "left":50, "right":10};
+          const chartHeight = height - margin.top - margin.bottom;
+          const chartWidth = width - margin.left - margin.right;
+
+          let scatter = svg.append("g")
+                           .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+          d3.json("wines.json").then(data => {
+          console.log(data);
+          data.forEach( (d, i) => {
+          d['points'] = Number(d['points'])
+          d['price'] = Number(d['price'].replace(/\$|,/g, ""))
+          });
+
+          //data = data.filter((d) => { return d['price'] >= 0 && d['points'] >= 0; } );
+
+          const priceExtent = d3.extent(data, d => d['price']);
+          const pointsExtent = d3.extent(data, d => d['points']);
+
+          console.log(priceExtent);
+          console.log(pointsExtent);
+
+
+          const priceScale = d3.scaleLinear().domain(priceExtent).range([0, chartWidth]);
+          const pointsScale = d3.scaleLinear().domain(pointsExtent).range([chartHeight, 0]);
+
+          let colorScale = d3.scaleOrdinal(d3.schemeCategory10)
+
+          function jitter(){
+             return Math.random(-4, 4);
+           }
+
+
+
+
+          let leftAxis = d3.axisLeft(pointsScale);
+          svg.append("g")
+             .attr("class", "y axis")
+             .attr("transform", "translate(" + (margin.left - 10) + "," + (margin.top ) + ")")
+             .call(leftAxis);
+
+          let bottomAxis = d3.axisBottom(priceScale).tickFormat(d3.format("$.000s"));
+          svg.append("g")
+             .attr("class", "x axis")
+             .attr("transform", "translate("+ (margin.left ) + "," + (margin.top + chartHeight + 10) + ")")
+             .call(bottomAxis);
+
+
+
+          let leftGrid = d3.axisLeft(pointsScale).tickFormat("").tickSize(-chartWidth-10);
+          svg.append("g").lower()
+             .attr("class", "y gridlines")
+             .attr("transform", "translate(" + (margin.left - 10) + "," + (margin.top ) + ")")
+             .call(leftGrid);
+
+          let bottomGrid = d3.axisBottom(priceScale).tickFormat("").tickSize(-chartHeight-10);
+          svg.append("g").lower()
+             .attr("class", "x gridlines")
+             .attr("transform", "translate("+ (margin.left ) + "," + (margin.top + chartHeight + 10) + ")")
+             .call(bottomGrid);
+
+           data.forEach( (d, i) => {
+
+             point = scatter.append("circle")
+                    .attr("cx", priceScale(d['price'] + jitter() ))
+                    .attr("cy", pointsScale(d['points'] + jitter() ))
+                    .attr("fill", colorScale(d['state']))
+                    .attr("r", "10px")
+                    .attr("opacity", 0.5)
+                    .attr("index", i);
+
+                    point.on("mouseover", function() {
+                        d3.select(this)
+                          .attr("stroke", colorScale(d['state']))
+                          .attr("stroke-width", 10)
+                          .attr("fill", lighten(colorScale(d['state'])));
+
+                        d3.select("#label").text(d['title']);
+                    });
+
+                    point.on("mouseout", function() {
+                      d3.select("#label").text('');
+                      d3.select(this)
+                        .transition().duration(200)
+                        .attr("fill", colorScale(d['state']))
+                        .attr("stroke-width", 0);
+
+
+                    });
+
+
+                });
+
+
+
+
+
+
+
+
+
+           });
+
+
+
+
+
+
+
+
+
+
+        </script>
+      </body>
 
 
 
