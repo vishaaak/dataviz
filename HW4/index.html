@@ -16,7 +16,10 @@
       }
 
       span{
-        display: block
+        display: inline-block;
+        margin-left: 50px;
+        font-style: oblique;
+
       }
 
 
@@ -38,31 +41,33 @@
         A. The column price included strings with dollar signs and commas which were not easily
         convertible into a Number so I replaced commas and dollar signs with an empty string. The price must be a positive
         value and the score must be between 0 and 100 so I created a filter which made sure the data points were in the
-        range or else it would remove them. Some of the states were not valid US states like Mars. SO i filtered them out as well.
-        After filtering, I have 862 data points.
+        range or else it would remove them. Some of the states were not valid US states like Mars. So I filtered them out as well.
+        After filtering, I have 862 data points. I did not edit any of the other data values because I would not be using them
+        for this scatterplot despite certain issues like missing values/empty strings in region and "N/A" in country.
 
       </p>
 
       <p>
-        B. I set the x-axis scale every $100 because that would show the data most clearly. This caused a clutter in
-          top right corner, however I did not attempt to make the graph more spaced out because the current represetation showed best how
-          most high scored wines were low priced and conveys good relative information. Each state is a different color.
+        B. I set the x-axis scale every $100 because that would show the data most clearly. This caused a clutter in the
+          top left corner, however I did not attempt to make the graph more spaced out because the current represetation showed best how
+          most high scored wines were low priced and conveys good relative information. Attempteding to declutter would have resulted in a lose of perspective or would not fit the svg.
+          I chose a linear scale because it would be best to show scores and prices and also to an audience who is presumably unscientific. Each state is a different color.
 
       </p>
       <p>
-        C. I made the circle elements 5px to reduce overlap and opacity low to reduce overlap as well. The circle increases during a mouseover. The jitter function is beneficial is small clutter, spacing them apart and making it easier to mouse over
-        individual points. However, for large clutters it like the one on the top right, it does not work as well. Also,
+        C. I made the circle elements 5px to reduce overlap and opacity low to reduce overlap as well. The circle increases during a mouseover. The jitter function is beneficial to small clutters, spacing them apart and making it easier to mouse over
+        individual points. However, for large clutters like the one on the top left, it does not work as well. Also,
         since it is random, in some cases the points still overlap and in other cases they overlap even if they hadn't before.
 
       </p>
       <p> D. I italicized the text for aesthetic reasons. A mouseover would increase the size of the circle many times over. This would aid people
         to know exactly which circle they are over as otherwise it wouldn't be as clear. It may be ineffective due to the fact that in clutters,
-        whenever the circel gets big it becomes hard to mouseover the circles right next to it.
+        whenever the circle gets big it becomes hard to mouseover the circles right next to it.
       </p>
       <p>
         E. I increased the opacity to 0.8 when you mouseover a legend while the rest are decreased to 0.2. This will help identity
         certain states over others. The clear label clears all of them. I styled the span to block so it would be clearer.
-      </p> 
+      </p>
 
       <svg id = "sp" width = 800 height = 500 >
           <text id = 'label' x = 750 y = 0 text-anchor= 'end' alignment-baseline= "hanging"></text>
@@ -91,6 +96,7 @@
           data.forEach( (d, i) => {
           d['points'] = Number(d['points'])
           d['price'] = Number(d['price'].replace(/\$|,/g, ""))
+          d['state'] = String(d['state'])
           });
 
           data = data.filter((d) => { return d['price'] >= 0 && d['points'] >= 0 && d['points'] <= 100; } );
@@ -188,7 +194,7 @@
                       .on("mouseover", function(){
 
 
-                        d3.selectAll("#sp point").each( function(){
+                        d3.selectAll("#sp circle").each( function(){
                           let unit = d3.select(this);
                           let st = unit.attr('states');
                           if(st === d){
@@ -210,7 +216,7 @@
                       .text("Clear")
                       .style("color", "black")
                       .on('mouseover', function(){
-                        d3.selectAll("#sp point").each(function(){
+                        d3.selectAll("#sp circle").each(function(){
                           let u = d3.select(this);
                           u.attr("opacity", 0.8);
                         });
