@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+
+
+      .gridlines .domain{
+        stroke: none
+      }
+
+      .gridlines{
+        color: #bbb;
+        opacity: 0.6
+
+      }
+
+      h1{
+        font-style: oblique;
+      }
+    </style>
+    <title> Homework 5 </title>
+  </head>
+
+
+  <body>
+    <h1> CS/INFO 3300: Homework 5 </h2>
+    <h2> Vishaak Raghupathy - vr258 </h2>
+
+    <p id = "problem"> Problem 1. The relationship does not appear to be linear,
+      in fact it appears to be somewhat exponential. There appears concentrations of points
+      that create vertical lines at x-values such as 0.5, 0.6-0.8, 1, 1.5 and more. These discontinuities would lead me to
+      believe that people prefer to buy diamonds with carats at culturally significant values or intervals.
+     </p>
+
+    <svg id = "plot_1" width = 500 height = 500>
+    <script id = "p1">
+      const svg = d3.select("svg#plot_1");
+      const width = svg.attr("width");
+      const height = svg.attr("height");
+      const margin = { "top": 10, "right": 10, "bottom": 40, "left":60};
+      const chartHeight = height - margin.top - margin.bottom;
+      const chartWidth = width - margin.left - margin.right;
+
+      let plot = svg.append("g")
+                       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      d3.json("diamonds.json").then(data =>{
+        data.forEach((d, i) =>{
+          d["price"] = Number(d["price"]);
+          d["carat"] = Number(d["carat"]);
+        });
+
+        const priceExtent = d3.extent(data, d => d['price']);
+        const caratExtent = d3.extent(data, d => d['carat']);
+
+        const priceScale = d3.scaleLinear().domain([priceExtent[1], 0]).range([0, chartWidth]);
+        const caratScale = d3.scaleLinear().domain([caratExtent[1], 0]).range([chartHeight, 0]);
+
+        let y_axis = d3.axisLeft(priceScale).tickFormat(d3.format("$,.2r"));
+        svg.append("g")
+           .attr("class", "y axis")
+           .attr("transform", "translate(" + (margin.left -10 ) + "," + (margin.top) + ")")
+           .call(y_axis);
+        let x_axis = d3.axisBottom(caratScale).ticks(5);
+        svg.append("g")
+           .attr("class", "x axis")
+           .attr("transform", "translate(" + (margin.left) + "," + (margin.top + chartHeight) + ")")
+           .call(x_axis);
+
+        let elements = svg.selectAll("circle").data(data)
+        elements.enter()
+                .append("circle")
+                .attr("r", 3)
+                .attr("opacity", 0.3)
+                .attr("fill", "darkblue")
+                .merge(elements)
+                .attr("cx", d => caratScale(d["carat"]) + margin.left)
+                .attr("cy", d => priceScale(d["price"]) + margin.top);
+
+
+
+
+        let x_grid = d3.axisLeft(priceScale).tickFormat("").tickSize(-chartWidth - 10);
+        svg.append("g").lower()
+            .attr("class", "x gridlines")
+            .attr("transform", "translate(" + (margin.left - 10) + "," + (margin.top ) + ")")
+            .call(x_grid);
+
+        let y_grid = d3.axisBottom(caratScale).ticks(5).tickFormat("").tickSize(chartHeight + 10);
+        svg.append("g").lower()
+            .attr("class", "y gridlines")
+            .attr("transform", "translate(" + (margin.left) + "," + (margin.top ) + ")")
+            .call(y_grid);
+
+
+
+      });
+    </script>
+
+    <p> Problem 2: </p>
+
+    <svg id = "HCL" width = 420px height = 420px>
+
+    <script>
+      var list = [];
+
+      for(var h = 0; h <= 360; h = h + 18){
+        for(var c = 0; c <= 100; c = c + 5){
+          list.push({h, c});
+        }
+      }
+
+      const svg_hcl = d3.select("svg#HCL");
+      const cwidth = svg_hcl.attr("width");
+      const cheight = svg_hcl.attr("height");
+      const hExtent = d3.extent(list, d => d['h']);
+      const cExtent = d3.extent(list, d => d['c']);
+      const hScale = d3.scaleLinear().domain([0, hExtent[1]]).range([10, cwidth]);
+      const cScale = d3.scaleLinear().domain([cExtent[1], 0]).range([cheight, 10]);
+
+
+
+
+
+      function showCircles(lightness){
+        let points = svg_hcl.selectAll("circle.part2").data(list)
+        points.enter()
+              .append("circle")
+              .attr("class", "part2")
+              .attr("r", "10px")
+              .attr("fill", "darkblue")
+              .attr('fill', d3.hcl(d => hScale(d['h']), d => cScale(d['c']), lightness))
+              .merge(points)
+              .attr("cx", d => hScale(d["h"] ))
+              .attr("cy", d => cScale(d["c"]));
+
+
+
+
+      }
+
+      showCircles(80)
+
+      console.log(list)
+
+
+    </script>
+
+
+  </body>
+</html>
